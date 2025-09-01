@@ -1,73 +1,17 @@
-# .NET Runtime
+# Aerochat .NET App Host
 
-[![Build Status](https://dev.azure.com/dnceng-public/public/_apis/build/status/dotnet/runtime/runtime?branchName=main)](https://dev.azure.com/dnceng-public/public/_build/latest?definitionId=129&branchName=main)
-[![Help Wanted](https://img.shields.io/github/issues/dotnet/runtime/help%20wanted?style=flat-square&color=%232EA043&label=help%20wanted)](https://github.com/dotnet/runtime/labels/help%20wanted)
-[![Good First Issue](https://img.shields.io/github/issues/dotnet/runtime/good%20first%20issue?style=flat-square&color=%232EA043&label=good%20first%20issue)](https://github.com/dotnet/runtime/labels/good%20first%20issue)
-[![Discord](https://img.shields.io/discord/732297728826277939?style=flat-square&label=Discord&logo=discord&logoColor=white&color=7289DA)](https://aka.ms/dotnet-discord)
+This repository contains the source code for the native .NET application host used by Aerochat since version 0.2.4. While it contains the entirety of the .NET source code, the only relevant part is the application host. I simply did not want to spend a significant amount of time to split the application host source code from the rest of the .NET source code (though I may do that at a further point in time).
 
-* [What is .NET?](#what-is-net)
-* [How can I contribute?](#how-can-i-contribute)
-* [Reporting security issues and security bugs](#reporting-security-issues-and-security-bugs)
-* [Filing issues](#filing-issues)
-* [Useful Links](#useful-links)
-* [.NET Foundation](#net-foundation)
-* [License](#license)
+## Why?
 
-This repo contains the code to build the .NET runtime, libraries and shared host (`dotnet`) installers for
-all supported platforms, as well as the sources to .NET runtime and libraries.
+Aerochat targets operating systems which .NET itself no longer officially supports, such as Windows 7. There are some assumptions that the current .NET runtime and native host application (which is what this repo supplements) make which don't apply to Windows 7.
 
-## What is .NET?
+For example, `LoadLibraryEx` got some additional parameters, which are quite useful if you want to run more secure code, but will make the call completely fail on unupdated Windows Vista and 7. Fortunately, this update got backported to both operating systems.
 
-Official Starting Page: <https://dotnet.microsoft.com>
+## Building and deploying
 
-* [How to use .NET](https://learn.microsoft.com/dotnet/core/get-started) (with VS, VS Code, command-line CLI)
-  * [Install official releases](https://dotnet.microsoft.com/download)
-  * [Documentation](https://learn.microsoft.com/dotnet/core) (Get Started, Tutorials, Porting from .NET Framework, API reference, ...)
-    * [Deploying apps](https://learn.microsoft.com/dotnet/core/deploying)
-* [Support](https://github.com/dotnet/core/blob/main/support.md) (Releases, OS Versions, ...)
-* [Roadmap](https://github.com/dotnet/core/blob/main/roadmap.md)
+I am not sure what environment you should use, but you should be on Windows. I am on Windows 10 build 19045.
 
-## How can I contribute?
-
-We welcome contributions! Many people all over the world have helped make this project better.
-
-* [Contributing](CONTRIBUTING.md) explains what kinds of contributions we welcome
-* [Workflow Instructions](docs/workflow/README.md) explains how to build and test
-* [Dogfooding .NET](docs/project/dogfooding.md) explains how to get nightly builds of the runtime and its libraries to test them in your own projects.
-
-## Reporting security issues and security bugs
-
-Security issues and bugs should be reported privately, via email, to the Microsoft Security Response Center (MSRC) <secure@microsoft.com>. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Further information, including the MSRC PGP key, can be found in the [Security TechCenter](https://www.microsoft.com/msrc/faqs-report-an-issue). You can also find these instructions in this repo's [Security doc](SECURITY.md).
-
-Also see info about related [Microsoft .NET Bounty Program](https://www.microsoft.com/msrc/bounty-dot-net-core).
-
-## Filing issues
-
-This repo should contain issues that are tied to the runtime, the class libraries and frameworks, the installation of the `dotnet` binary (sometimes known as the `muxer`) and the installation of the .NET runtime and libraries.
-
-For other issues, please file them to their appropriate sibling repos. We have links to many of them on [our new issue page](https://github.com/dotnet/runtime/issues/new/choose).
-
-## Useful Links
-
-* [.NET source index](https://source.dot.net) / [.NET Framework source index](https://referencesource.microsoft.com)
-* [API Reference docs](https://learn.microsoft.com/dotnet/api)
-* [.NET API Catalog](https://apisof.net) (incl. APIs from daily builds and API usage info)
-* [API docs writing guidelines](https://github.com/dotnet/dotnet-api-docs/wiki) - useful when writing /// comments
-* [.NET Discord Server](https://aka.ms/dotnet-discord) - a place to discuss the development of .NET and its ecosystem
-
-## .NET Foundation
-
-.NET Runtime is a [.NET Foundation](https://www.dotnetfoundation.org/projects) project.
-
-There are many .NET related projects on GitHub.
-
-* [.NET home repo](https://github.com/Microsoft/dotnet) - links to 100s of .NET projects, from Microsoft and the community.
-* [ASP.NET Core home](https://learn.microsoft.com/aspnet/core) - the best place to start learning about ASP.NET Core.
-
-This project has adopted the code of conduct defined by the [Contributor Covenant](https://contributor-covenant.org) to clarify expected behavior in our community. For more information, see the [.NET Foundation Code of Conduct](https://www.dotnetfoundation.org/code-of-conduct).
-
-General .NET OSS discussions: [.NET Foundation Discussions](https://github.com/dotnet-foundation/Home/discussions)
-
-## License
-
-.NET (including the runtime repo) is licensed under the [MIT](LICENSE.TXT) license.
+1. Make sure to turn off your firewall if you're blocking all outgoing requests from unfamiliar applications. The `build.cmd` script tries to download things from NuGet and will fail if you don't let it connect to the internet.
+2. Run `build -subset host -configuration Release`. You may get some NuGet error anyway, but this seems to not matter at all.
+3. Your build artifacts should be in `artifacts/bin/win-<arch>-<config>/corehost`. For example, for me, it is in `artifacts/bin/win-x64-Release/corehost`. Grab the `apphost.exe` and drop it in the AppHostBin folder in the Aerochat source code.

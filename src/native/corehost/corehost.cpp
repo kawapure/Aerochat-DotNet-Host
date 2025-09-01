@@ -139,6 +139,27 @@ int exe_start(const int argc, const pal::char_t* argv[])
     bool requires_hostfxr_startupinfo_interface = false;
 
 #if defined(FEATURE_APPHOST)
+#if defined(_WIN32)
+    // For Aerochat, we need to test for KB2533623 in order for .NET to use LoadLibraryEx
+    // with extended arguments (such as LOAD_LIBRARY_SEARCH_SYSTEM32).
+    // I haven't fixed every case in the app host as it would require patching the
+    // entire runtime for a version of the operating system that few people use, so
+    // we will just suggest the OS update instead.
+    {
+        HMODULE hKernel32 = LoadLibraryExW(L"kernel32", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+        
+        if (hKernel32)
+        {
+            FreeLibrary(hKernel32);
+        }
+        else
+        {
+            MessageBoxW(NULL, L"Your operating system needs to be updated to KB2533623 to run Aerochat.", L"Error", MB_OK);
+            return 1;
+        }
+    }
+#endif
+
     pal::string_t embedded_app_name;
     if (!is_exe_enabled_for_execution(&embedded_app_name))
     {
