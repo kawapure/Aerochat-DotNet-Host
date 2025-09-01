@@ -154,7 +154,7 @@ int exe_start(const int argc, const pal::char_t* argv[])
         }
         else
         {
-            MessageBoxW(NULL, L"Your operating system needs to be updated to KB2533623 to run Aerochat.", L"Error", MB_OK);
+            MessageBoxW(NULL, L"Your operating system requires the update \"KB2533623\" to run Aerochat.", L"Error", MB_OK);
             return 1;
         }
     }
